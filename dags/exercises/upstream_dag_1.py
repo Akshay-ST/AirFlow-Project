@@ -38,7 +38,7 @@ t_log = logging.getLogger("airflow.task")
     },
     params={
         "my_cities": Param(
-            ["Bern", "Zurich", "Lausanne"],
+            ["London", "Paris", "Tokyo", "Manali", "Bhopal", "Pune", "Albuquerque"],
             type="array",
             title="Cities of interest:",
             description="Enter the cities you want to retrieve weather info for. One city per line.",
@@ -87,7 +87,7 @@ def upstream_dag_1():
     @task
     def get_cities(**context) -> str:
         ### START CODE HERE ### (modify the return statement to return all cities in the list)
-        return context["params"]["my_cities"][0]
+        return context["params"]["my_cities"]
         ### END CODE HERE  ###
 
     cities = get_cities()
@@ -110,7 +110,7 @@ def upstream_dag_1():
         return {"city": city, "lat": lat, "long": long}
 
     ### START CODE HERE ### (use the expand method to map the task over all cities)
-    cities_coordinates = get_lat_long_for_one_city(city=cities)
+    cities_coordinates = get_lat_long_for_one_city.expand(city=cities)
     ### END CODE HERE ###
     ### END EXERCISE ###
 
@@ -189,7 +189,9 @@ def upstream_dag_1():
     # Tip: Use the outlets parameter to achieve this as shown in the upstream_dag_2.
 
     ## START CODE HERE ##
-    @task()
+    @task(
+        trigger_rule="none_failed",
+    )
     ## END CODE HERE ##
     def create_weather_table(
         weather: list | dict, cities_coordinates: list | dict, **context
